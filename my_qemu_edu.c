@@ -12,6 +12,23 @@ static const struct pci_device_id my_qemu_edu_ids[] = {
 
 static int my_qemu_edu_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 {
+	int err;
+
+	err = pcim_enable_device(pdev);
+	if (err) {
+		return err;
+	}
+
+	err = pcim_iomap_regions(pdev, BIT(0), DRIVER_NAME);
+	if (err) {
+		return err;
+	}
+
+	void __iomem *bar0 = pcim_iomap_table(pdev)[0];
+
+	const u32 value = readl(bar0 + 0x00);
+	dev_info(&pdev->dev, "BAR0+0x00 = 0x%08x\n", value);
+
 	pr_info("my_qemu_edu: probe\n");
 	return 0;
 }
